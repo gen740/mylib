@@ -2,10 +2,11 @@
 
 #include <coroutine>
 #include <exception>
+#include <iostream>
 #include <memory>
 #include <type_traits>
 
-namespace Coroutine {
+namespace Mylib::Coroutine {
 
 /*!
  * 最低限の Generator の実装アルゴリズムとかで使うと良い
@@ -47,7 +48,6 @@ struct Generator {
 
     void return_void() {}
 
-    // void return_value(ValType value) {current_value = value;}
     auto yield_value(ValType value) {
       if constexpr (is_unique_ptr<ValType>::value) {
         current_value = std::move(value);
@@ -57,22 +57,6 @@ struct Generator {
       return std::suspend_always{};
     }
   };
-
-  bool next() {
-    if (coro) [[likely]] {
-      coro();
-      return !coro.done();
-    }
-    return false;
-  }
-
-  ValType value() {
-    if constexpr (is_unique_ptr<ValType>::value) {
-      return std::move(coro.promise().current_value);
-    } else {
-      return coro.promise().current_value;
-    }
-  }
 
   Generator &operator=(const Generator &) = delete;
   Generator &operator=(Generator &&) = delete;
@@ -88,9 +72,72 @@ struct Generator {
     }
   }
 
- private:
+  bool next() {
+    return coro ? (coro(), !coro.done()) : false;
+  }
+
+  ValType value() {
+    if constexpr (is_unique_ptr<ValType>::value) {
+      return std::move(coro.promise().current_value);
+    } else {
+      return coro.promise().current_value;
+    }
+  }
+
   explicit Generator(handle h) : coro(h) {}
 
   handle coro;
+
+ private:
+  struct iterator {
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = ValType;
+    using difference_type = std::ptrdiff_t;
+    using pointer = ValType *;
+    using reference = ValType &;
+
+    Generator *gen;
+
+    bool done = false;
+
+    explicit iterator(Generator *gen, bool done) noexcept
+        : gen(gen), done(done) {}
+
+    friend bool operator==(const iterator &lhs, const iterator &rhs) {
+      return (lhs.done == rhs.done) && (lhs.gen == rhs.gen);
+    }
+
+    friend bool operator!=(const iterator &lhs, const iterator &rhs) {
+      return !(lhs == rhs);
+    }
+
+    iterator &operator++() {
+      done = !gen->next();
+      return *this;
+    }
+
+    iterator operator++(int) {
+      auto tmp = *this;
+      ++*this;
+      return tmp;
+    }
+
+    ValType operator*() const {
+      return gen->value();
+    }
+  };
+
+ public:
+  iterator begin() {
+    this->next();
+    if (this->coro.done()) {
+      return this->end();
+    }
+    return iterator(this, false);
+  }
+
+  iterator end() {
+    return iterator(this, true);
+  }
 };
-}  // namespace Coroutine
+}  // namespace Mylib::Coroutine
