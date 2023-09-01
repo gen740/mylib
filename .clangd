@@ -29,7 +29,6 @@ Diagnostics:
       - cppcoreguidelines-pro-type-reinterpret-cast
       - cppcoreguidelines-pro-type-vararg
       - modernize-avoid-c-arrays
-      - modernize-use-trailing-return-type
       - readability-convert-member-functions-to-static
       - readability-identifier-length
       - readability-identifier-naming

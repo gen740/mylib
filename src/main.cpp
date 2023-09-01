@@ -1,6 +1,5 @@
 #include <iostream>
 
-
 auto main() -> int {
 #ifndef NDEBUG
   std::cout << "Hello World DBUG" << std::endl;

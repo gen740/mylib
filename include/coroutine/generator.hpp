@@ -58,8 +58,8 @@ struct Generator {
     }
   };
 
-  Generator &operator=(const Generator &) = delete;
-  Generator &operator=(Generator &&) = delete;
+  auto operator=(const Generator &) -> Generator & = delete;
+  auto operator=(Generator &&) -> Generator & = delete;
   Generator(Generator const &) = delete;
 
   Generator(Generator &&rhs) noexcept : coro(rhs.coro) {
@@ -72,11 +72,11 @@ struct Generator {
     }
   }
 
-  bool next() {
+  auto next() -> bool {
     return coro ? (coro(), !coro.done()) : false;
   }
 
-  ValType value() {
+  auto value() -> ValType {
     if constexpr (is_unique_ptr<ValType>::value) {
       return std::move(coro.promise().current_value);
     } else {
@@ -103,32 +103,32 @@ struct Generator {
     explicit iterator(Generator *gen, bool done) noexcept
         : gen(gen), done(done) {}
 
-    friend bool operator==(const iterator &lhs, const iterator &rhs) {
+    friend auto operator==(const iterator &lhs, const iterator &rhs) -> bool {
       return (lhs.done == rhs.done) && (lhs.gen == rhs.gen);
     }
 
-    friend bool operator!=(const iterator &lhs, const iterator &rhs) {
+    friend auto operator!=(const iterator &lhs, const iterator &rhs) -> bool {
       return !(lhs == rhs);
     }
 
-    iterator &operator++() {
+    auto operator++() -> iterator & {
       done = !gen->next();
       return *this;
     }
 
-    iterator operator++(int) {
+    auto operator++(int) -> iterator {
       auto tmp = *this;
       ++*this;
       return tmp;
     }
 
-    ValType operator*() const {
+    auto operator*() const -> ValType {
       return gen->value();
     }
   };
 
  public:
-  iterator begin() {
+  auto begin() -> iterator {
     this->next();
     if (this->coro.done()) {
       return this->end();
@@ -136,7 +136,7 @@ struct Generator {
     return iterator(this, false);
   }
 
-  iterator end() {
+  auto end() -> iterator {
     return iterator(this, true);
   }
 };
