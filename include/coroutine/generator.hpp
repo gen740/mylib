@@ -2,7 +2,6 @@
 
 #include <coroutine>
 #include <exception>
-#include <iostream>
 #include <memory>
 #include <type_traits>
 
@@ -30,21 +29,13 @@ struct Generator {
       return Generator{nullptr};
     }
 
-    auto get_return_object() {
-      return Generator{handle::from_promise(*this)};
-    }
+    auto get_return_object() { return Generator{handle::from_promise(*this)}; }
 
-    auto initial_suspend() {
-      return std::suspend_always{};
-    }
+    auto initial_suspend() { return std::suspend_always{}; }
 
-    auto final_suspend() noexcept {
-      return std::suspend_always{};
-    }
+    auto final_suspend() noexcept { return std::suspend_always{}; }
 
-    void unhandled_exception() {
-      std::terminate();
-    }
+    void unhandled_exception() { std::terminate(); }
 
     void return_void() {}
 
@@ -62,9 +53,7 @@ struct Generator {
   auto operator=(Generator &&) -> Generator & = delete;
   Generator(Generator const &) = delete;
 
-  Generator(Generator &&rhs) noexcept : coro(rhs.coro) {
-    rhs.coro = nullptr;
-  }
+  Generator(Generator &&rhs) noexcept : coro(rhs.coro) { rhs.coro = nullptr; }
 
   ~Generator() {
     if (coro) {
@@ -72,9 +61,7 @@ struct Generator {
     }
   }
 
-  auto next() -> bool {
-    return coro ? (coro(), !coro.done()) : false;
-  }
+  auto next() -> bool { return coro ? (coro(), !coro.done()) : false; }
 
   auto value() -> ValType {
     if constexpr (is_unique_ptr<ValType>::value) {
@@ -122,9 +109,7 @@ struct Generator {
       return tmp;
     }
 
-    auto operator*() const -> ValType {
-      return gen->value();
-    }
+    auto operator*() const -> ValType { return gen->value(); }
   };
 
  public:
@@ -136,8 +121,6 @@ struct Generator {
     return iterator(this, false);
   }
 
-  auto end() -> iterator {
-    return iterator(this, true);
-  }
+  auto end() -> iterator { return iterator(this, true); }
 };
 }  // namespace Mylib::Coroutine

@@ -58,9 +58,10 @@ if(${MYLIB_ENABLE_TEST})
   endforeach()
 endif()
 
-# if(${MYLIB_ENABLE_GTEST}) file(GLOB TEST_SOURCES
-# ${CMAKE_CURRENT_LIST_DIR}/gtests/*.cpp
-# ${CMAKE_CURRENT_LIST_DIR}/gtests/**/*.cpp) add_executable(mylib-gtest
-# ${TEST_SOURCES}) set_property(TARGET mylib-gtest PROPERTY CXX_STANDARD 20)
-# target_link_libraries(mylib-gtest PUBLIC mylib GTest::gtest_main)
+# if(${MYLIB_ENABLE_GTEST})
+#   file(GLOB TEST_SOURCES ${CMAKE_CURRENT_LIST_DIR}/gtests/*.cpp
+#        ${CMAKE_CURRENT_LIST_DIR}/gtests/**/*.cpp)
+#   add_executable(mylib-gtest ${TEST_SOURCES})
+#   set_property(TARGET mylib-gtest PROPERTY CXX_STANDARD 20)
+#   target_link_libraries(mylib-gtest PUBLIC mylib GTest::gtest_main)
 # endif()
